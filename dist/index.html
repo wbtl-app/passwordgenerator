@@ -1,0 +1,2036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Generator - wbtl.app</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%237ed321'/><stop offset='100%25' stop-color='%236dc210'/></linearGradient></defs><rect width='32' height='32' rx='6' fill='url(%23g)'/><g transform='translate(4,4)' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'><rect x='3' y='11' width='18' height='10' rx='2'/><circle cx='12' cy='16' r='1'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></g></svg>">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-secondary: #f5f5f7;
+      --text: #1d1d1f;
+      --text-secondary: #6e6e73;
+      --accent: #0071e3;
+      --accent-hover: #0077ed;
+      --border: #d2d2d7;
+      --toggle-bg: #e5e5e5;
+      --toggle-knob: #ffffff;
+      --tool-gradient-start: #7ed321;
+      --tool-gradient-end: #6dc210;
+      --success: #34c759;
+      --warning: #ff9500;
+      --danger: #ff3b30;
+      --input-bg: #ffffff;
+      --very-weak: #ff3b30;
+      --weak: #ff6b6b;
+      --fair: #ff9500;
+      --strong: #34c759;
+      --very-strong: #00c7be;
+      --super-strong: linear-gradient(to right, #00c7be 0%, #00c7be 60%, #006964 100%);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #000000;
+        --bg-secondary: #1c1c1e;
+        --text: #f5f5f7;
+        --text-secondary: #98989d;
+        --accent: #2997ff;
+        --accent-hover: #40a9ff;
+        --border: #38383a;
+        --toggle-bg: #3a3a3c;
+        --toggle-knob: #ffffff;
+        --input-bg: #2c2c2e;
+        --super-strong: linear-gradient(to right, #00c7be 0%, #00c7be 60%, #e0f7fa 100%);
+      }
+    }
+
+    [data-theme="dark"] {
+      --bg: #000000;
+      --bg-secondary: #1c1c1e;
+      --text: #f5f5f7;
+      --text-secondary: #98989d;
+      --accent: #2997ff;
+      --accent-hover: #40a9ff;
+      --border: #38383a;
+      --toggle-bg: #3a3a3c;
+      --toggle-knob: #ffffff;
+      --input-bg: #2c2c2e;
+      --super-strong: linear-gradient(to right, #00c7be 0%, #00c7be 60%, #e0f7fa 100%);
+    }
+
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --bg-secondary: #f5f5f7;
+      --text: #1d1d1f;
+      --text-secondary: #6e6e73;
+      --accent: #0071e3;
+      --accent-hover: #0077ed;
+      --border: #d2d2d7;
+      --toggle-bg: #e5e5e5;
+      --toggle-knob: #ffffff;
+      --input-bg: #ffffff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .tool-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--tool-gradient-start), var(--tool-gradient-end));
+    }
+
+    .tool-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .tool-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .back-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s ease;
+    }
+
+    .back-link:hover {
+      color: var(--accent);
+    }
+
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .theme-toggle svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--text-secondary);
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: var(--toggle-bg);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: var(--toggle-knob);
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease;
+    }
+
+    [data-theme="dark"] .toggle-switch::after,
+    :root:not([data-theme="light"]) .toggle-switch::after {
+      transform: translateX(20px);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) .toggle-switch::after {
+        transform: translateX(0);
+      }
+    }
+
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    .content {
+      width: 100%;
+    }
+
+    /* Password Display */
+    .password-display {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .password-output {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .password-textarea {
+      width: calc(100% - 6.5rem);
+      height: 4.5em;
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+      font-size: 1.2rem;
+      line-height: 1.5;
+      background: var(--input-bg);
+      color: var(--text);
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      resize: none;
+      overflow-y: auto;
+    }
+
+    .password-textarea:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: -1px;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: background 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      white-space: nowrap;
+      z-index: 1;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .copy-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .copy-btn.copied {
+      background: var(--success);
+    }
+
+    /* Strength Meter */
+    .strength-meter {
+      margin-top: 1rem;
+    }
+
+    .strength-bar {
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: visible;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+
+    .strength-fill {
+      height: 100%;
+      transition: width 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .strength-fill.super-strong::after {
+      content: '';
+      position: absolute;
+      right: -4px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(224, 247, 250, 0.8) 30%, rgba(0, 199, 190, 0.4) 60%, transparent 100%);
+      box-shadow:
+        0 0 20px 8px rgba(224, 247, 250, 0.9),
+        0 0 40px 16px rgba(0, 199, 190, 0.6),
+        0 0 60px 24px rgba(0, 199, 190, 0.3);
+      pointer-events: none;
+    }
+
+    [data-theme="light"] .strength-fill.super-strong::after,
+    :root:not([data-theme="dark"]) .strength-fill.super-strong::after {
+      background: radial-gradient(circle, rgba(0, 60, 58, 0.9) 0%, rgba(0, 100, 97, 0.6) 30%, rgba(0, 150, 145, 0.3) 60%, transparent 100%);
+      box-shadow:
+        0 0 16px 6px rgba(0, 100, 97, 0.5),
+        0 0 32px 12px rgba(0, 150, 145, 0.3),
+        0 0 48px 18px rgba(0, 150, 145, 0.15);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) .strength-fill.super-strong::after {
+        background: radial-gradient(circle, rgba(0, 60, 58, 0.9) 0%, rgba(0, 100, 97, 0.6) 30%, rgba(0, 150, 145, 0.3) 60%, transparent 100%);
+        box-shadow:
+          0 0 16px 6px rgba(0, 100, 97, 0.5),
+          0 0 32px 12px rgba(0, 150, 145, 0.3),
+          0 0 48px 18px rgba(0, 150, 145, 0.15);
+      }
+    }
+
+    .strength-text {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Generate Button */
+    .generate-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--tool-gradient-start), var(--tool-gradient-end));
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+      margin-bottom: 2rem;
+    }
+
+    .generate-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(126, 211, 33, 0.3);
+    }
+
+    .generate-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Settings Panel */
+    .settings-panel {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .settings-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .settings-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .settings-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 1rem;
+    }
+
+    /* Mode Tabs */
+    .mode-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .mode-tab {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .mode-tab.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .mode-tab:hover:not(.active) {
+      border-color: var(--accent);
+    }
+
+    /* Length Slider */
+    .length-control {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .length-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .length-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .length-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+    }
+
+    .length-input {
+      width: 70px;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    /* Character Class Row */
+    .char-class-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .char-class-row:last-child {
+      border-bottom: none;
+    }
+
+    .char-class-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 180px;
+    }
+
+    .char-class-checkbox input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .char-class-checkbox label {
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.95rem;
+    }
+
+    .char-class-limits {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .char-class-limits label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .char-class-limits input {
+      width: 50px;
+      padding: 0.35rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    /* Checkbox Items */
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+    }
+
+    .checkbox-item input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .checkbox-item label {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Text Inputs with Clear Button */
+    .text-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .text-input-group label {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .text-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .text-input {
+      width: 100%;
+      padding: 0.75rem;
+      padding-right: 2.5rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 1rem;
+      font-family: 'SF Mono', Monaco, monospace;
+    }
+
+    .clear-input-btn {
+      position: absolute;
+      right: 0.5rem;
+      background: var(--border);
+      border: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+    }
+
+    .clear-input-btn.visible {
+      display: flex;
+    }
+
+    .clear-input-btn:hover {
+      opacity: 1;
+    }
+
+    .clear-input-btn svg {
+      width: 12px;
+      height: 12px;
+      stroke: var(--text);
+    }
+
+    /* Number Input */
+    .number-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .number-group label {
+      font-size: 0.9rem;
+    }
+
+    .number-input {
+      width: 80px;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    /* Load Defaults Button */
+    .defaults-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+
+    .defaults-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Password History */
+    .history-panel {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .history-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .history-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .history-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .history-toggle input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+    }
+
+    .clear-history-btn {
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .clear-history-btn:hover {
+      text-decoration: underline;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: var(--input-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .history-password {
+      flex: 1;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.9rem;
+      word-break: break-all;
+    }
+
+    .history-copy-btn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      padding: 0.25rem;
+      flex-shrink: 0;
+    }
+
+    .history-copy-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .history-empty {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    /* Passphrase Settings */
+    .passphrase-settings {
+      display: none;
+    }
+
+    .passphrase-settings.active {
+      display: block;
+    }
+
+    .password-settings {
+      display: block;
+    }
+
+    .password-settings.hidden {
+      display: none;
+    }
+
+    /* Collapsible */
+    .collapsible-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      padding: 0.5rem 0;
+    }
+
+    .collapsible-header svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--text-secondary);
+      transition: transform 0.2s ease;
+    }
+
+    .collapsible-header.open svg {
+      transform: rotate(180deg);
+    }
+
+    .collapsible-content {
+      display: none;
+      padding-top: 1rem;
+    }
+
+    .collapsible-content.open {
+      display: block;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .tool-name {
+        font-size: 1.1rem;
+      }
+
+      .header-right {
+        gap: 1rem;
+      }
+
+      .back-link {
+        font-size: 0.8rem;
+      }
+
+      .password-textarea {
+        font-size: 1rem;
+      }
+
+      .char-class-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .char-class-checkbox {
+        min-width: auto;
+      }
+
+      .mode-tabs {
+        flex-direction: column;
+      }
+
+      .history-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <div class="tool-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="10" rx="2"/>
+          <circle cx="12" cy="16" r="1"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <div class="tool-name">Password Generator</div>
+    </div>
+    <div class="header-right">
+      <a href="https://wbtl.app" class="back-link">wbtl.app</a>
+      <div class="theme-toggle">
+        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/>
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+        <div class="toggle-switch" onclick="toggleTheme()" role="button" tabindex="0" aria-label="Toggle dark mode"></div>
+        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="content">
+      <!-- Password Display -->
+      <div class="password-display">
+        <div class="password-output">
+          <textarea class="password-textarea" id="passwordText" readonly placeholder="Click Generate to create a password"></textarea>
+          <button class="copy-btn" id="copyBtn" onclick="copyPassword()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copy
+          </button>
+        </div>
+        <div class="strength-meter">
+          <div class="strength-bar">
+            <div class="strength-fill" id="strengthFill" style="width: 0%"></div>
+          </div>
+          <div class="strength-text">
+            <span id="strengthLabel">Generate a password to see strength</span>
+            <span id="entropyText"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate Button -->
+      <button class="generate-btn" onclick="generatePassword()">Generate Password</button>
+
+      <!-- Mode Tabs -->
+      <div class="mode-tabs">
+        <button class="mode-tab active" id="tabPassword" onclick="setMode('password')">Password</button>
+        <button class="mode-tab" id="tabPassphrase" onclick="setMode('passphrase')">Passphrase</button>
+        <button class="mode-tab" id="tabPronounceable" onclick="setMode('pronounceable')">Pronounceable</button>
+      </div>
+
+      <!-- Settings Panel -->
+      <div class="settings-panel">
+        <!-- Password Settings -->
+        <div class="password-settings" id="passwordSettings">
+          <div class="settings-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <div class="settings-title" style="margin-bottom: 0">Length</div>
+              <button class="defaults-btn" onclick="loadDefaults()">Load Defaults</button>
+            </div>
+            <div class="length-control">
+              <input type="range" class="length-slider" id="lengthSlider" min="2" max="1000" value="16" oninput="updateLength(this.value)">
+              <input type="number" class="length-input" id="lengthInput" min="2" max="1000" value="16" onchange="updateLength(this.value)">
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-title">Characters</div>
+
+            <div class="char-class-row">
+              <div class="char-class-checkbox">
+                <input type="checkbox" id="uppercase" checked onchange="savePreferences()">
+                <label for="uppercase">Uppercase (A-Z)</label>
+              </div>
+              <div class="char-class-limits">
+                <label>At least</label>
+                <input type="number" id="uppercaseMin" min="0" value="1" onchange="savePreferences()">
+                <label>At most</label>
+                <input type="number" id="uppercaseMax" min="0" placeholder="-" onchange="savePreferences()">
+              </div>
+            </div>
+
+            <div class="char-class-row">
+              <div class="char-class-checkbox">
+                <input type="checkbox" id="lowercase" checked onchange="savePreferences()">
+                <label for="lowercase">Lowercase (a-z)</label>
+              </div>
+              <div class="char-class-limits">
+                <label>At least</label>
+                <input type="number" id="lowercaseMin" min="0" value="1" onchange="savePreferences()">
+                <label>At most</label>
+                <input type="number" id="lowercaseMax" min="0" placeholder="-" onchange="savePreferences()">
+              </div>
+            </div>
+
+            <div class="char-class-row">
+              <div class="char-class-checkbox">
+                <input type="checkbox" id="numbers" checked onchange="savePreferences()">
+                <label for="numbers">Numbers (0-9)</label>
+              </div>
+              <div class="char-class-limits">
+                <label>At least</label>
+                <input type="number" id="numbersMin" min="0" value="1" onchange="savePreferences()">
+                <label>At most</label>
+                <input type="number" id="numbersMax" min="0" placeholder="-" onchange="savePreferences()">
+              </div>
+            </div>
+
+            <div class="char-class-row">
+              <div class="char-class-checkbox">
+                <input type="checkbox" id="symbols" checked onchange="savePreferences()">
+                <label for="symbols">Symbols (!@#$...)</label>
+              </div>
+              <div class="char-class-limits">
+                <label>At least</label>
+                <input type="number" id="symbolsMin" min="0" value="1" onchange="savePreferences()">
+                <label>At most</label>
+                <input type="number" id="symbolsMax" min="0" placeholder="-" onchange="savePreferences()">
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="checkbox-item">
+              <input type="checkbox" id="excludeAmbiguous" onchange="savePreferences()">
+              <label for="excludeAmbiguous">Exclude ambiguous characters (0, O, l, 1, I)</label>
+            </div>
+          </div>
+
+          <!-- Advanced Settings -->
+          <div class="settings-section">
+            <div class="collapsible-header" onclick="toggleAdvanced()">
+              <div class="settings-title" style="margin-bottom: 0">Advanced Options</div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="advancedArrow">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+            <div class="collapsible-content" id="advancedContent">
+              <div class="text-input-group" style="margin-bottom: 1rem">
+                <label for="customSymbols">Custom symbols (leave empty for default)</label>
+                <div class="text-input-wrapper">
+                  <input type="text" class="text-input" id="customSymbols" placeholder="!@#$%^&*()-_=+[]{}|;:,.<>?" onchange="savePreferences()" oninput="updateClearButtonVisibility('customSymbols', 'customSymbolsClearBtn')">
+                  <button class="clear-input-btn" id="customSymbolsClearBtn" onclick="resetCustomSymbols()" title="Reset to default">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="text-input-group" style="margin-bottom: 1rem">
+                <label for="excludeChars">Exclude specific characters</label>
+                <div class="text-input-wrapper">
+                  <input type="text" class="text-input" id="excludeChars" placeholder="Characters to exclude..." onchange="savePreferences()" oninput="updateClearButtonVisibility('excludeChars', 'excludeCharsClearBtn')">
+                  <button class="clear-input-btn" id="excludeCharsClearBtn" onclick="clearExcludeChars()" title="Clear">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="number-group">
+                <label for="passwordCount">Generate multiple passwords:</label>
+                <input type="number" class="number-input" id="passwordCount" min="1" max="100" value="1" onchange="savePreferences()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Passphrase Settings -->
+        <div class="passphrase-settings" id="passphraseSettings">
+          <div class="settings-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <div class="settings-title" style="margin-bottom: 0">Word Count</div>
+              <button class="defaults-btn" onclick="loadDefaults()">Load Defaults</button>
+            </div>
+            <div class="length-control">
+              <input type="range" class="length-slider" id="wordCountSlider" min="3" max="50" value="6" oninput="updateWordCount(this.value)">
+              <input type="number" class="length-input" id="wordCountInput" min="3" max="50" value="6" onchange="updateWordCount(this.value)">
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="text-input-group">
+              <label for="separator">Word separator</label>
+              <input type="text" class="text-input" id="separator" value="-" maxlength="3" style="width: 80px" onchange="savePreferences()">
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="checkbox-group">
+              <div class="checkbox-item">
+                <input type="checkbox" id="capitalizeWords" onchange="savePreferences()">
+                <label for="capitalizeWords">Capitalize words</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="includeNumber" onchange="savePreferences()">
+                <label for="includeNumber">Include a number</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pronounceable Settings -->
+        <div class="passphrase-settings" id="pronounceableSettings">
+          <div class="settings-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <div class="settings-title" style="margin-bottom: 0">Length</div>
+              <button class="defaults-btn" onclick="loadDefaults()">Load Defaults</button>
+            </div>
+            <div class="length-control">
+              <input type="range" class="length-slider" id="pronounceableLengthSlider" min="2" max="100" value="16" oninput="updatePronounceableLength(this.value)">
+              <input type="number" class="length-input" id="pronounceableLengthInput" min="2" max="100" value="16" onchange="updatePronounceableLength(this.value)">
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="checkbox-group">
+              <div class="checkbox-item">
+                <input type="checkbox" id="pronounceableCapitals" checked onchange="savePreferences()">
+                <label for="pronounceableCapitals">Include capitals</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="pronounceableNumbers" onchange="savePreferences()">
+                <label for="pronounceableNumbers">Include numbers</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Password History -->
+      <div class="history-panel">
+        <div class="history-header">
+          <div class="history-title">Recent Passwords</div>
+          <div class="history-controls">
+            <label class="history-toggle">
+              <input type="checkbox" id="trackHistory" onchange="toggleHistoryTracking()">
+              Track recent passwords
+            </label>
+            <button class="clear-history-btn" onclick="clearHistory()">Clear</button>
+          </div>
+        </div>
+        <div class="history-list" id="historyList">
+          <div class="history-empty">History tracking is disabled</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // EFF Short Word List (subset for passphrase generation)
+    const WORD_LIST = [
+      "acid", "acorn", "acre", "acts", "afar", "affix", "aged", "agent", "agile", "aging",
+      "agony", "ahead", "aide", "aids", "aim", "ajar", "alarm", "album", "alert", "alike",
+      "alive", "alley", "allot", "allow", "alloy", "ally", "alone", "alpha", "alps", "altar",
+      "alter", "amino", "ample", "amuse", "angel", "anger", "angle", "ankle", "apple", "april",
+      "apron", "aqua", "area", "arena", "argue", "arise", "armor", "army", "aroma", "array",
+      "arrow", "arson", "art", "ashen", "ashes", "atlas", "atom", "attic", "audio", "avert",
+      "avoid", "awake", "award", "away", "awful", "axis", "bacon", "badge", "badly", "baker",
+      "balmy", "banjo", "barge", "barn", "bash", "basic", "basin", "basis", "batch", "bath",
+      "baton", "beach", "beam", "beard", "beast", "begin", "being", "belly", "belt", "bench",
+      "berry", "bike", "bird", "birth", "black", "blade", "blame", "blank", "blast", "blaze",
+      "bleak", "blend", "bless", "blimp", "blind", "blink", "bliss", "block", "blood", "bloom",
+      "blown", "blues", "blunt", "blurt", "blush", "board", "boat", "body", "bogus", "boil",
+      "bold", "bolt", "bond", "bone", "bonus", "book", "booth", "boots", "boss", "botch",
+      "both", "boxer", "brain", "brake", "brand", "brass", "brave", "bread", "break", "breed",
+      "brew", "brick", "bride", "brief", "bring", "brink", "brisk", "broad", "broil", "broke",
+      "brook", "broom", "brush", "brute", "buddy", "budge", "buggy", "build", "built", "bulge",
+      "bulk", "bully", "bunch", "bunny", "burn", "burst", "bury", "bush", "bust", "busy",
+      "buzz", "cable", "cache", "cadet", "cage", "cake", "calm", "camel", "camp", "canal",
+      "candy", "cane", "cape", "card", "cargo", "carol", "carry", "carve", "case", "cash",
+      "cast", "catch", "cause", "cave", "cease", "cedar", "chain", "chair", "champ", "chant",
+      "chaos", "charm", "chart", "chase", "cheap", "check", "cheek", "cheer", "chess", "chest",
+      "chew", "chief", "child", "chill", "chip", "choir", "choke", "chord", "chore", "chose",
+      "chunk", "churn", "claim", "clamp", "clap", "clash", "clasp", "class", "claw", "clay",
+      "clean", "clear", "clerk", "click", "cliff", "climb", "cling", "clip", "cloak", "clock",
+      "clone", "close", "cloth", "cloud", "clout", "clown", "club", "cluck", "clue", "clump",
+      "coach", "coast", "coat", "cobra", "cocoa", "coil", "coin", "coke", "cold", "colon",
+      "color", "comet", "comic", "comma", "cone", "coral", "cork", "corn", "cost", "couch",
+      "cough", "count", "court", "cover", "cozy", "crack", "craft", "cramp", "crane", "crank",
+      "crash", "crate", "crawl", "crazy", "cream", "creek", "creep", "crest", "crew", "crime",
+      "crisp", "crook", "crop", "cross", "crowd", "crown", "crude", "cruel", "crush", "crust",
+      "cube", "cupid", "cure", "curl", "curry", "curse", "curve", "cycle", "daily", "dairy",
+      "daisy", "dance", "dandy", "dart", "dash", "data", "date", "dawn", "deal", "dean",
+      "dear", "death", "debit", "debt", "debug", "decal", "decay", "deck", "decor", "decoy",
+      "deed", "delay", "denim", "dense", "depot", "depth", "derby", "desk", "dew", "dial",
+      "diary", "dice", "dig", "digit", "dime", "dine", "disco", "dish", "disk", "ditch",
+      "dive", "dizzy", "dock", "dodge", "doing", "doll", "dome", "donor", "donut", "doom",
+      "door", "dorm", "dose", "dot", "doubt", "dough", "dove", "down", "dozen", "draft",
+      "drain", "drake", "drama", "drank", "drape", "draw", "dread", "dream", "dress", "dried",
+      "drift", "drill", "drink", "drip", "drive", "droit", "drone", "drool", "drop", "drown",
+      "drum", "dry", "duck", "duct", "dude", "duel", "duet", "dug", "duke", "dull",
+      "dummy", "dump", "dune", "dunk", "duo", "dusk", "dust", "duty", "dwarf", "dwell",
+      "eagle", "earth", "easel", "east", "eaten", "eaves", "ebony", "echo", "edge", "eel",
+      "eject", "elbow", "elder", "elect", "elite", "elm", "elude", "elves", "email", "ember",
+      "emit", "empty", "emu", "end", "enemy", "enjoy", "enter", "entry", "envoy", "equal",
+      "erase", "error", "erupt", "essay", "etch", "evade", "even", "event", "every", "exact",
+      "exam", "exile", "exist", "exit", "extra", "fable", "faced", "facet", "fact", "fade",
+      "faint", "fairy", "faith", "fake", "fall", "false", "fame", "fancy", "fang", "farm",
+      "fatal", "fault", "feast", "feed", "feel", "fence", "fend", "ferry", "fest", "fetch",
+      "fever", "fiber", "field", "fiery", "fifth", "fifty", "fight", "film", "filth", "final",
+      "finch", "find", "fine", "fire", "firm", "first", "fish", "fist", "five", "fix",
+      "flag", "flak", "flame", "flank", "flap", "flare", "flash", "flask", "flat", "flaw",
+      "fled", "flesh", "flex", "flick", "fling", "flint", "flip", "float", "flock", "flood",
+      "floor", "flop", "floss", "flour", "flow", "fluid", "flunk", "flush", "flute", "foam",
+      "focal", "focus", "foggy", "foil", "fold", "folk", "font", "food", "fool", "foot",
+      "force", "forge", "fork", "form", "fort", "forth", "forty", "forum", "fossil", "foster",
+      "found", "four", "fox", "foyer", "frail", "frame", "frank", "fraud", "freak", "free",
+      "fresh", "friar", "fried", "frill", "frisk", "frizz", "frog", "from", "front", "frost",
+      "froth", "frown", "froze", "fruit", "fry", "fudge", "fuel", "full", "fumes", "fund",
+      "fungi", "funk", "funny", "fur", "fury", "fuse", "fuss", "futon", "fuzzy", "gadget",
+      "gain", "gala", "game", "gamma", "gap", "gas", "gasp", "gate", "gauge", "gave",
+      "gaze", "gear", "geek", "gel", "gem", "gene", "gent", "germ", "ghost", "giant",
+      "gift", "gig", "gild", "gills", "gist", "give", "given", "glad", "gland", "glare",
+      "glass", "glaze", "gleam", "glide", "glint", "globe", "gloom", "glory", "gloss", "glove",
+      "glow", "glue", "goal", "goat", "going", "gold", "golf", "gong", "good", "goofy",
+      "goose", "gorge", "gory", "gown", "grab", "grace", "grade", "grain", "grand", "grant",
+      "grape", "graph", "grasp", "grass", "grave", "gravy", "gray", "graze", "great", "greed",
+      "green", "greet", "grief", "grill", "grim", "grin", "grind", "grip", "grit", "groan",
+      "groom", "grope", "gross", "group", "grove", "growl", "grown", "grub", "grunt", "guard",
+      "guess", "guest", "guide", "guild", "guilt", "gulp", "gummy", "gun", "guru", "gust",
+      "habit", "hack", "hail", "hair", "half", "hall", "halt", "hand", "hang", "happy",
+      "hard", "harm", "harsh", "haste", "hasty", "hatch", "hate", "haul", "haven", "havoc",
+      "hawk", "hay", "hazel", "head", "heal", "heap", "heart", "heat", "heavy", "hedge",
+      "heel", "hefty", "heist", "held", "hello", "help", "herb", "herd", "hero", "hex",
+      "hide", "high", "hike", "hill", "hilt", "hind", "hinge", "hint", "hippo", "hire",
+      "hiss", "hitch", "hive", "hoax", "hobby", "hoist", "hold", "hole", "holy", "home",
+      "honey", "honor", "hood", "hook", "hop", "hope", "horde", "horn", "horse", "host",
+      "hotel", "hound", "hour", "house", "hover", "howl", "hub", "huge", "hull", "human",
+      "humid", "humor", "hump", "hunch", "hung", "hunk", "hunt", "hurry", "hurt", "hush",
+      "husky", "hut", "hydro", "hyena", "hymn", "ice", "icing", "icon", "idea", "ideal",
+      "idiom", "idiot", "idle", "idly", "idol", "igloo", "image", "imp", "imply", "inch",
+      "index", "info", "ink", "inlet", "inner", "input", "intro", "ion", "iris", "iron",
+      "irony", "issue", "itch", "item", "ivory", "ivy", "jab", "jack", "jade", "jaded",
+      "jail", "jam", "jar", "java", "jaw", "jazz", "jeans", "jeep", "jelly", "jerk",
+      "jest", "jet", "jewel", "jiffy", "jig", "jilt", "jinx", "jive", "job", "jock",
+      "jog", "join", "joint", "joke", "joker", "jolly", "jolt", "josh", "joy", "judge",
+      "juice", "juicy", "jumbo", "jump", "jumpy", "junk", "junky", "jury", "just", "karma",
+      "kayak", "keen", "keep", "keg", "kelp", "kept", "ketch", "key", "kick", "kid",
+      "kill", "kilt", "kin", "kind", "king", "kiosk", "kiss", "kite", "kitty", "kiwi",
+      "knee", "kneel", "knew", "knife", "knit", "knob", "knock", "knot", "know", "koala",
+      "lab", "label", "labor", "lace", "lack", "lad", "laden", "ladle", "lady", "lag",
+      "lair", "lake", "lamb", "lame", "lamp", "lance", "land", "lane", "lap", "lapel",
+      "large", "lark", "laser", "lash", "lass", "last", "latch", "late", "later", "latex",
+      "lathe", "latte", "laugh", "lava", "law", "lawn", "layer", "lazy", "lead", "leaf",
+      "leak", "lean", "leap", "learn", "lease", "leash", "least", "leave", "ledge", "left",
+      "leg", "legal", "lemon", "lend", "lens", "lent", "lever", "levy", "lid", "life",
+      "lift", "light", "like", "lilac", "limb", "lime", "limit", "limp", "line", "linen",
+      "link", "lint", "lion", "lip", "list", "lit", "liter", "live", "liver", "llama",
+      "load", "loaf", "loan", "lobby", "lobe", "local", "lock", "lodge", "loft", "log",
+      "logic", "logo", "lone", "long", "look", "loom", "loop", "loose", "loot", "lord",
+      "lose", "loss", "lost", "lot", "lotus", "loud", "louse", "love", "lover", "low",
+      "lower", "loyal", "luck", "lucky", "lump", "lunar", "lunch", "lunge", "lure", "lurk",
+      "lush", "lust", "lying", "lyric", "macho", "macro", "mad", "made", "magic", "maid",
+      "mail", "main", "major", "make", "male", "mall", "malt", "mama", "mango", "manor",
+      "many", "map", "maple", "march", "mark", "marry", "marsh", "mask", "mass", "mast",
+      "mat", "match", "mate", "math", "max", "maybe", "mayor", "maze", "meal", "mean",
+      "meant", "meat", "medal", "media", "meek", "meet", "melon", "melt", "memo", "mend",
+      "menu", "mercy", "merge", "merit", "merry", "mesh", "mess", "messy", "met", "metal",
+      "meter", "metro", "micro", "midst", "might", "mild", "mile", "milk", "mill", "mimic",
+      "mind", "mine", "miner", "mini", "minor", "mint", "minus", "mist", "mite", "mix",
+      "moan", "moat", "mob", "mock", "mode", "model", "modem", "moist", "mold", "mole",
+      "mom", "money", "monk", "month", "mood", "moon", "moose", "mop", "moral", "more",
+      "morph", "moss", "most", "motel", "moth", "motor", "motto", "mound", "mount", "mouse",
+      "mouth", "move", "movie", "much", "muck", "mud", "mug", "mule", "mull", "mummy",
+      "munch", "mural", "murky", "muse", "music", "musk", "must", "mute", "mutt", "myth",
+      "nag", "nail", "name", "nanny", "nap", "nasal", "nasty", "natal", "navy", "near",
+      "neat", "neck", "need", "neon", "nerve", "nest", "net", "never", "new", "newt",
+      "next", "nibs", "nice", "nick", "night", "nine", "ninja", "nit", "nix", "noble",
+      "nod", "node", "noise", "none", "nook", "noon", "norm", "north", "nose", "notch",
+      "note", "novel", "now", "nub", "nudge", "null", "numb", "nurse", "nut", "nylon",
+      "oak", "oar", "oasis", "oat", "oath", "obey", "ocean", "odd", "odds", "odor",
+      "off", "offer", "often", "oil", "oily", "okay", "old", "olive", "omega", "omen",
+      "omit", "once", "one", "onion", "only", "onset", "onto", "oops", "ooze", "open",
+      "opera", "opt", "optic", "oral", "orbit", "order", "organ", "other", "otter", "ouch",
+      "ounce", "our", "out", "outer", "oval", "oven", "over", "overt", "owe", "owl",
+      "own", "owner", "oxide", "oxygen", "pace", "pack", "pact", "pad", "pagan", "page",
+      "paid", "pail", "pain", "paint", "pair", "pal", "pale", "palm", "pan", "panda",
+      "panel", "panic", "pant", "pants", "papa", "paper", "par", "park", "part", "party",
+      "pass", "past", "paste", "pat", "patch", "path", "patio", "pause", "pave", "paw",
+      "pay", "peace", "peach", "peak", "pear", "pearl", "pedal", "peek", "peel", "peer",
+      "pen", "penny", "perch", "peril", "perk", "perky", "perm", "pest", "pet", "petal",
+      "petty", "phase", "phone", "photo", "piano", "pick", "pie", "piece", "pier", "pig",
+      "pike", "pile", "pill", "pilot", "pin", "pinch", "pine", "ping", "pink", "pint",
+      "pipe", "pit", "pitch", "pity", "pivot", "pixel", "pizza", "place", "plaid", "plain",
+      "plan", "plane", "plank", "plant", "plate", "play", "plaza", "plea", "plead", "pledge",
+      "plenty", "plop", "plot", "plow", "ploy", "pluck", "plug", "plum", "plumb", "plume",
+      "plump", "plus", "plush", "ply", "pod", "poem", "poet", "point", "poise", "poker",
+      "polar", "pole", "polish", "polka", "poll", "polo", "pond", "pony", "pooch", "pool",
+      "poor", "pop", "poppy", "porch", "pork", "port", "pose", "posh", "post", "posy",
+      "pot", "potion", "pouch", "pound", "pour", "pout", "power", "prank", "pray", "press",
+      "pretty", "prey", "price", "pride", "prime", "print", "prior", "prism", "prize", "probe",
+      "promo", "prone", "prong", "proof", "prop", "prose", "proud", "prove", "prowl", "prude",
+      "prune", "pry", "pub", "puff", "pull", "pulp", "pulse", "pump", "punch", "punk",
+      "pupil", "puppy", "pure", "purge", "purse", "push", "put", "putt", "putty", "quack",
+      "quad", "quake", "qualm", "quart", "queen", "query", "quest", "quick", "quid", "quiet",
+      "quill", "quilt", "quirk", "quit", "quite", "quota", "quote", "race", "rack", "radar",
+      "radio", "raft", "rage", "raid", "rail", "rain", "raise", "rake", "rally", "ramp",
+      "ranch", "range", "rank", "rant", "rapid", "rare", "rash", "rasp", "rat", "rate",
+      "ratio", "rave", "raw", "ray", "razor", "reach", "react", "read", "ready", "real",
+      "realm", "reap", "rear", "rebel", "red", "reef", "reel", "refer", "reign", "relax",
+      "relay", "rely", "rent", "reply", "reset", "rest", "return", "reveal", "reward", "rhino",
+      "rhyme", "rib", "rice", "rich", "rid", "ride", "rider", "ridge", "rifle", "rift",
+      "rig", "right", "rigid", "rim", "ring", "rink", "rinse", "riot", "rip", "ripe",
+      "rise", "risk", "risky", "rite", "rival", "river", "road", "roam", "roar", "roast",
+      "robe", "robin", "robot", "rock", "rod", "rode", "rodeo", "rogue", "role", "roll",
+      "roman", "romp", "roof", "room", "roost", "root", "rope", "rose", "rosy", "rot",
+      "rouge", "rough", "round", "route", "rover", "row", "royal", "rub", "ruby", "rude",
+      "rug", "ruin", "rule", "ruler", "rumor", "run", "rune", "rung", "rural", "rush",
+      "rust", "rusty", "rut", "sack", "sad", "safe", "saga", "sage", "said", "sail",
+      "saint", "sake", "salad", "sale", "salon", "salt", "salty", "same", "sand", "sandy",
+      "sane", "sang", "sank", "sap", "sash", "sauce", "sauna", "save", "savor", "say",
+      "scale", "scalp", "scam", "scan", "scar", "scare", "scarf", "scary", "scene", "scent",
+      "scope", "score", "scorn", "scout", "scowl", "scrap", "sea", "seal", "seam", "seat",
+      "sect", "see", "seed", "seek", "seem", "seen", "seize", "self", "sell", "semi",
+      "send", "sense", "sent", "serve", "set", "seven", "sew", "shade", "shaft", "shake",
+      "shall", "sham", "shame", "shape", "share", "shark", "sharp", "shave", "she", "shear",
+      "shed", "sheen", "sheep", "sheer", "sheet", "shelf", "shell", "shift", "shin", "shine",
+      "shiny", "ship", "shirt", "shock", "shoe", "shook", "shoot", "shop", "shore", "short",
+      "shot", "shout", "shove", "show", "shred", "shrub", "shrug", "shuck", "shun", "shut",
+      "shy", "sick", "side", "siege", "sift", "sigh", "sight", "sign", "silk", "silky",
+      "sill", "silly", "simple", "since", "sing", "single", "sink", "sip", "sir", "siren",
+      "sit", "site", "six", "size", "skate", "ski", "skid", "skill", "skin", "skip",
+      "skirt", "skull", "sky", "slab", "slack", "slain", "slam", "slang", "slant", "slap",
+      "slash", "slate", "slave", "slay", "sled", "sleek", "sleep", "sleet", "slept", "slice",
+      "slick", "slide", "slim", "slime", "slimy", "sling", "slip", "slit", "slob", "slope",
+      "slot", "slow", "slug", "slum", "slump", "slur", "slush", "sly", "smack", "small",
+      "smart", "smash", "smear", "smell", "smelt", "smile", "smirk", "smog", "smoke", "smoky",
+      "smooth", "smug", "snack", "snag", "snail", "snake", "snap", "snare", "snarl", "sneak",
+      "sneer", "sniff", "snoop", "snore", "snort", "snout", "snow", "snowy", "snub", "snuck",
+      "snuff", "snug", "soak", "soap", "soar", "sob", "sober", "sock", "soda", "sofa",
+      "soft", "soggy", "soil", "solar", "sold", "sole", "solid", "solo", "solve", "some",
+      "son", "song", "soon", "soot", "sorry", "sort", "soul", "sound", "soup", "sour",
+      "south", "space", "spade", "span", "spare", "spark", "spasm", "spawn", "speak", "spear",
+      "spec", "speed", "spell", "spend", "spent", "spew", "spice", "spicy", "spike", "spill",
+      "spin", "spine", "spit", "spite", "split", "spoil", "spoke", "spoof", "spook", "spoon",
+      "sport", "spot", "spout", "spray", "spree", "sprint", "sprout", "spud", "spun", "spur",
+      "spurt", "squad", "squat", "squid", "stab", "stack", "staff", "stage", "stain", "stair",
+      "stake", "stale", "stall", "stamp", "stand", "stank", "star", "stare", "stark", "start",
+      "stash", "state", "stay", "steak", "steal", "steam", "steel", "steep", "steer", "stem",
+      "step", "stern", "stew", "stick", "sticky", "stiff", "still", "sting", "stink", "stint",
+      "stir", "stock", "stomp", "stone", "stony", "stood", "stool", "stoop", "stop", "store",
+      "stork", "storm", "story", "stout", "stove", "strap", "straw", "stray", "strip", "strobe",
+      "strong", "strut", "stub", "stuck", "stud", "study", "stuff", "stump", "stun", "stung",
+      "stunk", "stunt", "style", "suave", "sub", "such", "suck", "suds", "sue", "sugar",
+      "suit", "suite", "sulk", "sum", "sun", "sung", "sunk", "sunny", "super", "supply",
+      "sure", "surf", "surge", "survey", "swab", "swam", "swamp", "swan", "swap", "swarm",
+      "sway", "swear", "sweat", "sweaty", "sweep", "sweet", "swell", "swept", "swift", "swim",
+      "swine", "swing", "swipe", "swirl", "swoop", "sword", "swore", "sworn", "swum", "swung",
+      "syrup", "table", "taboo", "tacky", "taco", "tact", "tag", "tail", "take", "taken",
+      "tale", "talk", "tall", "talon", "tame", "tan", "tang", "tank", "tap", "tape",
+      "tar", "target", "task", "taste", "tasty", "taunt", "tax", "taxi", "tea", "teach",
+      "team", "tear", "tease", "tech", "teddy", "teen", "teeth", "tell", "temper", "tempo",
+      "tempt", "ten", "tend", "tender", "tense", "tent", "tenth", "term", "test", "text",
+      "than", "thank", "that", "thaw", "the", "theft", "their", "them", "theme", "then",
+      "there", "these", "they", "thick", "thief", "thigh", "thin", "thing", "think", "third",
+      "this", "thorn", "those", "three", "thrift", "thrill", "thrive", "throat", "throne", "throw",
+      "thrown", "thud", "thug", "thumb", "thump", "thus", "tick", "ticket", "tide", "tidy",
+      "tie", "tier", "tiger", "tight", "tile", "till", "tilt", "time", "timid", "tin",
+      "tint", "tiny", "tip", "tire", "tired", "title", "toast", "today", "toe", "tofu",
+      "toga", "toilet", "token", "told", "toll", "tomb", "ton", "tone", "tong", "tongue",
+      "tonight", "too", "took", "tool", "toot", "tooth", "top", "topic", "torch", "torn",
+      "torso", "toss", "total", "tote", "touch", "tough", "tour", "toward", "towel", "tower",
+      "town", "toxic", "toy", "trace", "track", "tract", "trade", "trail", "train", "trait",
+      "tramp", "trap", "trash", "travel", "tray", "tread", "treat", "tree", "trek", "trend",
+      "trendy", "trial", "tribe", "trick", "tried", "trim", "trio", "trip", "trod", "troll",
+      "troop", "trot", "trout", "truce", "truck", "trudge", "true", "truly", "trump", "trunk",
+      "trust", "truth", "try", "tub", "tuba", "tube", "tuck", "tuft", "tug", "tulip",
+      "tumor", "tuna", "tune", "tunnel", "turf", "turn", "tutor", "tux", "twang", "tweak",
+      "tweed", "tweet", "twelve", "twenty", "twice", "twig", "twin", "twine", "twirl", "twist",
+      "twisty", "two", "type", "udder", "ugly", "ulcer", "ultra", "uncle", "under", "undo",
+      "uneven", "unfair", "unfit", "unfold", "union", "unique", "unit", "unite", "unity", "unkind",
+      "unless", "unlike", "unlock", "until", "unveil", "unwrap", "up", "update", "uphill", "upon",
+      "upper", "uproar", "upset", "uptown", "upward", "urban", "urge", "urgent", "urn", "us",
+      "use", "used", "useful", "usher", "usual", "utter", "vacant", "vacuum", "vague", "vain",
+      "valid", "valley", "value", "valve", "van", "vandal", "vanish", "vanity", "vapor", "vary",
+      "vase", "vast", "vat", "vault", "veal", "veer", "vegan", "veggie", "vein", "velvet",
+      "vend", "vendor", "vent", "venue", "verb", "verify", "verse", "very", "vessel", "vest",
+      "vet", "veto", "via", "vial", "vice", "video", "view", "vigil", "vigor", "vile",
+      "villa", "vine", "vinyl", "viola", "violet", "viper", "viral", "virtue", "virus", "visa",
+      "vision", "visit", "visual", "vital", "vivid", "vocal", "vodka", "vogue", "voice", "void",
+      "volt", "volume", "vomit", "vote", "voter", "vouch", "vow", "vowel", "voyage", "wacky",
+      "wad", "wade", "wader", "wafer", "wag", "wage", "wager", "wagon", "waist", "wait",
+      "waiter", "wake", "walk", "walker", "wall", "wallet", "walnut", "walrus", "waltz", "wand",
+      "wander", "want", "war", "ward", "warm", "warmth", "warn", "warp", "wart", "wary",
+      "wash", "wasp", "waste", "watch", "water", "watt", "wave", "wavy", "wax", "way",
+      "weak", "wealth", "weapon", "wear", "weary", "weasel", "weave", "web", "wed", "wedge",
+      "weed", "week", "weekly", "weep", "weigh", "weight", "weird", "weld", "well", "went",
+      "wept", "were", "west", "wet", "whale", "wharf", "what", "wheat", "wheel", "when",
+      "where", "which", "whiff", "while", "whim", "whine", "whip", "whirl", "whisper", "whistle",
+      "white", "who", "whole", "whom", "why", "wick", "wicked", "wide", "widen", "widow",
+      "width", "wife", "wig", "wild", "will", "wilt", "wimp", "win", "wince", "winch",
+      "wind", "window", "windy", "wine", "wing", "wink", "winner", "winter", "wipe", "wire",
+      "wisdom", "wise", "wish", "wisp", "wit", "witch", "with", "within", "wizard", "woe",
+      "woke", "wolf", "woman", "womb", "wonder", "wood", "wooden", "woof", "wool", "word",
+      "work", "worker", "world", "worm", "worn", "worry", "worse", "worst", "worth", "worthy",
+      "would", "wound", "woven", "wow", "wrap", "wrath", "wreath", "wreck", "wring", "wrist",
+      "write", "writer", "wrong", "wrote", "wrung", "yacht", "yam", "yank", "yard", "yarn",
+      "yawn", "year", "yearly", "yearn", "yeast", "yell", "yellow", "yelp", "yes", "yet",
+      "yield", "yoga", "yoke", "yolk", "you", "young", "your", "yours", "youth", "yoyo",
+      "yuck", "yummy", "zap", "zeal", "zebra", "zen", "zero", "zest", "zig", "zinc",
+      "zip", "zipper", "zombie", "zone", "zoo", "zoom"
+    ];
+
+    // Character sets
+    const UPPERCASE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const LOWERCASE = 'abcdefghijklmnopqrstuvwxyz';
+    const NUMBERS = '0123456789';
+    const DEFAULT_SYMBOLS = '!@#$%^&*()-_=+[]{}|;:,.<>?';
+    const AMBIGUOUS = '0O1lI';
+
+    // Pronounceable patterns
+    const CONSONANTS = 'bcdfghjklmnpqrstvwxyz';
+    const VOWELS = 'aeiou';
+
+    let currentMode = 'password';
+    let passwordHistory = [];
+    let trackingEnabled = false;
+
+    // Default settings
+    const DEFAULTS = {
+      length: 16,
+      uppercase: true,
+      lowercase: true,
+      numbers: true,
+      symbols: true,
+      uppercaseMin: 1,
+      uppercaseMax: '',
+      lowercaseMin: 1,
+      lowercaseMax: '',
+      numbersMin: 1,
+      numbersMax: '',
+      symbolsMin: 1,
+      symbolsMax: '',
+      excludeAmbiguous: false,
+      customSymbols: '',
+      excludeChars: '',
+      passwordCount: 1,
+      wordCount: 6,
+      separator: '-',
+      capitalizeWords: false,
+      includeNumber: false,
+      pronounceableLength: 16,
+      pronounceableCapitals: true,
+      pronounceableNumbers: false
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadPreferences();
+      renderHistory();
+      // Set mode from URL hash
+      const initialMode = getModeFromHash();
+      if (initialMode !== 'password') {
+        setMode(initialMode, false);
+      }
+      // Handle browser back/forward
+      window.addEventListener('hashchange', () => {
+        setMode(getModeFromHash(), false);
+      });
+      document.querySelector('.toggle-switch').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleTheme();
+        }
+      });
+    });
+
+    // Theme functions
+    function getSystemTheme() {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    function getStoredTheme() {
+      return localStorage.getItem('wbtl-theme');
+    }
+
+    function setTheme(theme) {
+      if (theme === 'system') {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.removeItem('wbtl-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('wbtl-theme', theme);
+      }
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const system = getSystemTheme();
+
+      if (!current) {
+        setTheme(system === 'dark' ? 'light' : 'dark');
+      } else {
+        if (current === system) {
+          setTheme(current === 'dark' ? 'light' : 'dark');
+        } else {
+          setTheme('system');
+        }
+      }
+    }
+
+    // Initialize theme from storage
+    (function() {
+      const stored = getStoredTheme();
+      if (stored) {
+        setTheme(stored);
+      }
+    })();
+
+    // Mode switching
+    function setMode(mode, updateHash = true) {
+      currentMode = mode;
+
+      document.querySelectorAll('.mode-tab').forEach(tab => tab.classList.remove('active'));
+      document.getElementById('tab' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+
+      document.getElementById('passwordSettings').classList.toggle('hidden', mode !== 'password');
+      document.getElementById('passphraseSettings').classList.toggle('active', mode === 'passphrase');
+      document.getElementById('pronounceableSettings').classList.toggle('active', mode === 'pronounceable');
+
+      // Update button text
+      const btn = document.querySelector('.generate-btn');
+      if (mode === 'passphrase') {
+        btn.textContent = 'Generate Passphrase';
+      } else if (mode === 'pronounceable') {
+        btn.textContent = 'Generate Pronounceable Password';
+      } else {
+        btn.textContent = 'Generate Password';
+      }
+
+      // Update URL hash (password is default, no hash needed)
+      if (updateHash) {
+        if (mode === 'password') {
+          history.replaceState(null, '', window.location.pathname);
+        } else {
+          history.replaceState(null, '', '#' + mode);
+        }
+      }
+    }
+
+    // Read mode from URL hash
+    function getModeFromHash() {
+      const hash = window.location.hash.slice(1).toLowerCase();
+      if (hash === 'passphrase') return 'passphrase';
+      if (hash === 'pronounceable') return 'pronounceable';
+      return 'password';
+    }
+
+    // Length controls
+    function updateLength(value) {
+      value = Math.max(2, Math.min(1000, parseInt(value) || 16));
+      document.getElementById('lengthSlider').value = Math.min(value, 1000);
+      document.getElementById('lengthInput').value = value;
+      savePreferences();
+    }
+
+    function updateWordCount(value) {
+      value = Math.max(3, Math.min(50, parseInt(value) || 4));
+      document.getElementById('wordCountSlider').value = value;
+      document.getElementById('wordCountInput').value = value;
+      savePreferences();
+    }
+
+    function updatePronounceableLength(value) {
+      value = Math.max(2, Math.min(100, parseInt(value) || 16));
+      document.getElementById('pronounceableLengthSlider').value = value;
+      document.getElementById('pronounceableLengthInput').value = value;
+      savePreferences();
+    }
+
+    // Advanced options toggle
+    function toggleAdvanced() {
+      const header = document.querySelector('.collapsible-header');
+      const content = document.getElementById('advancedContent');
+      header.classList.toggle('open');
+      content.classList.toggle('open');
+      savePreferences();
+    }
+
+    // Clear button visibility
+    function updateClearButtonVisibility(inputId, buttonId) {
+      const input = document.getElementById(inputId);
+      const btn = document.getElementById(buttonId);
+      if (input.value.length > 0) {
+        btn.classList.add('visible');
+      } else {
+        btn.classList.remove('visible');
+      }
+    }
+
+    // Clear/reset functions
+    function resetCustomSymbols() {
+      document.getElementById('customSymbols').value = '';
+      document.getElementById('customSymbolsClearBtn').classList.remove('visible');
+      savePreferences();
+    }
+
+    function clearExcludeChars() {
+      document.getElementById('excludeChars').value = '';
+      document.getElementById('excludeCharsClearBtn').classList.remove('visible');
+      savePreferences();
+    }
+
+    // Load defaults
+    function loadDefaults() {
+      document.getElementById('lengthSlider').value = DEFAULTS.length;
+      document.getElementById('lengthInput').value = DEFAULTS.length;
+      document.getElementById('uppercase').checked = DEFAULTS.uppercase;
+      document.getElementById('lowercase').checked = DEFAULTS.lowercase;
+      document.getElementById('numbers').checked = DEFAULTS.numbers;
+      document.getElementById('symbols').checked = DEFAULTS.symbols;
+      document.getElementById('uppercaseMin').value = DEFAULTS.uppercaseMin;
+      document.getElementById('uppercaseMax').value = DEFAULTS.uppercaseMax;
+      document.getElementById('lowercaseMin').value = DEFAULTS.lowercaseMin;
+      document.getElementById('lowercaseMax').value = DEFAULTS.lowercaseMax;
+      document.getElementById('numbersMin').value = DEFAULTS.numbersMin;
+      document.getElementById('numbersMax').value = DEFAULTS.numbersMax;
+      document.getElementById('symbolsMin').value = DEFAULTS.symbolsMin;
+      document.getElementById('symbolsMax').value = DEFAULTS.symbolsMax;
+      document.getElementById('excludeAmbiguous').checked = DEFAULTS.excludeAmbiguous;
+      document.getElementById('customSymbols').value = DEFAULTS.customSymbols;
+      document.getElementById('excludeChars').value = DEFAULTS.excludeChars;
+      updateClearButtonVisibility('customSymbols', 'customSymbolsClearBtn');
+      updateClearButtonVisibility('excludeChars', 'excludeCharsClearBtn');
+      document.getElementById('passwordCount').value = DEFAULTS.passwordCount;
+      document.getElementById('wordCountSlider').value = DEFAULTS.wordCount;
+      document.getElementById('wordCountInput').value = DEFAULTS.wordCount;
+      document.getElementById('separator').value = DEFAULTS.separator;
+      document.getElementById('capitalizeWords').checked = DEFAULTS.capitalizeWords;
+      document.getElementById('includeNumber').checked = DEFAULTS.includeNumber;
+      document.getElementById('pronounceableLengthSlider').value = DEFAULTS.pronounceableLength;
+      document.getElementById('pronounceableLengthInput').value = DEFAULTS.pronounceableLength;
+      document.getElementById('pronounceableCapitals').checked = DEFAULTS.pronounceableCapitals;
+      document.getElementById('pronounceableNumbers').checked = DEFAULTS.pronounceableNumbers;
+      savePreferences();
+    }
+
+    // Secure random number generation
+    function getSecureRandom(max) {
+      const array = new Uint32Array(1);
+      crypto.getRandomValues(array);
+      return array[0] % max;
+    }
+
+    // Password generation
+    function generatePassword() {
+      const count = parseInt(document.getElementById('passwordCount').value) || 1;
+
+      if (count > 1) {
+        const passwords = [];
+        for (let i = 0; i < count; i++) {
+          passwords.push(generateSinglePassword());
+        }
+        document.getElementById('passwordText').value = passwords.join('\n');
+        if (trackingEnabled) {
+          passwords.forEach(p => addToHistory(p));
+        }
+        updateStrengthMeter(passwords[0]);
+      } else {
+        const password = generateSinglePassword();
+        document.getElementById('passwordText').value = password;
+        if (trackingEnabled) {
+          addToHistory(password);
+        }
+        updateStrengthMeter(password);
+      }
+    }
+
+    function generateSinglePassword() {
+      switch (currentMode) {
+        case 'passphrase':
+          return generatePassphrase();
+        case 'pronounceable':
+          return generatePronounceable();
+        default:
+          return generateRandomPassword();
+      }
+    }
+
+    function generateRandomPassword() {
+      const length = parseInt(document.getElementById('lengthInput').value) || 16;
+      const useUppercase = document.getElementById('uppercase').checked;
+      const useLowercase = document.getElementById('lowercase').checked;
+      const useNumbers = document.getElementById('numbers').checked;
+      const useSymbols = document.getElementById('symbols').checked;
+      const excludeAmbiguous = document.getElementById('excludeAmbiguous').checked;
+      const customSymbols = document.getElementById('customSymbols').value;
+      const excludeChars = document.getElementById('excludeChars').value;
+
+      // Get min/max constraints
+      const constraints = {
+        uppercase: {
+          min: parseInt(document.getElementById('uppercaseMin').value) || 0,
+          max: document.getElementById('uppercaseMax').value ? parseInt(document.getElementById('uppercaseMax').value) : null
+        },
+        lowercase: {
+          min: parseInt(document.getElementById('lowercaseMin').value) || 0,
+          max: document.getElementById('lowercaseMax').value ? parseInt(document.getElementById('lowercaseMax').value) : null
+        },
+        numbers: {
+          min: parseInt(document.getElementById('numbersMin').value) || 0,
+          max: document.getElementById('numbersMax').value ? parseInt(document.getElementById('numbersMax').value) : null
+        },
+        symbols: {
+          min: parseInt(document.getElementById('symbolsMin').value) || 0,
+          max: document.getElementById('symbolsMax').value ? parseInt(document.getElementById('symbolsMax').value) : null
+        }
+      };
+
+      // Build character pools
+      let charSets = [];
+
+      if (useUppercase) {
+        let chars = UPPERCASE;
+        if (excludeAmbiguous) chars = chars.replace(/[OI]/g, '');
+        if (excludeChars) chars = chars.split('').filter(c => !excludeChars.includes(c)).join('');
+        if (chars.length > 0) charSets.push({ chars, ...constraints.uppercase });
+      }
+      if (useLowercase) {
+        let chars = LOWERCASE;
+        if (excludeAmbiguous) chars = chars.replace(/[l]/g, '');
+        if (excludeChars) chars = chars.split('').filter(c => !excludeChars.includes(c)).join('');
+        if (chars.length > 0) charSets.push({ chars, ...constraints.lowercase });
+      }
+      if (useNumbers) {
+        let chars = NUMBERS;
+        if (excludeAmbiguous) chars = chars.replace(/[01]/g, '');
+        if (excludeChars) chars = chars.split('').filter(c => !excludeChars.includes(c)).join('');
+        if (chars.length > 0) charSets.push({ chars, ...constraints.numbers });
+      }
+      if (useSymbols) {
+        let chars = customSymbols || DEFAULT_SYMBOLS;
+        if (excludeChars) chars = chars.split('').filter(c => !excludeChars.includes(c)).join('');
+        if (chars.length > 0) charSets.push({ chars, ...constraints.symbols });
+      }
+
+      if (charSets.length === 0) {
+        return 'Select at least one character type';
+      }
+
+      // Build full pool for random filling
+      const fullPool = charSets.map(s => s.chars).join('');
+
+      // Generate password
+      const passwordArray = [];
+
+      // First, ensure minimum requirements for each character set
+      charSets.forEach(set => {
+        const count = set.min;
+        for (let i = 0; i < count && passwordArray.length < length; i++) {
+          passwordArray.push(set.chars[getSecureRandom(set.chars.length)]);
+        }
+      });
+
+      // Fill remaining with random characters from full pool
+      // But respect max constraints
+      while (passwordArray.length < length) {
+        // Pick a random character set that hasn't hit its max
+        const availableSets = charSets.filter(set => {
+          if (set.max === null) return true;
+          const currentCount = passwordArray.filter(c => set.chars.includes(c)).length;
+          return currentCount < set.max;
+        });
+
+        if (availableSets.length === 0) {
+          // All sets maxed out, can't generate more
+          break;
+        }
+
+        const selectedSet = availableSets[getSecureRandom(availableSets.length)];
+        passwordArray.push(selectedSet.chars[getSecureRandom(selectedSet.chars.length)]);
+      }
+
+      // Shuffle
+      for (let i = passwordArray.length - 1; i > 0; i--) {
+        const j = getSecureRandom(i + 1);
+        [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
+      }
+
+      return passwordArray.join('');
+    }
+
+    function generatePassphrase() {
+      const wordCount = parseInt(document.getElementById('wordCountInput').value) || 4;
+      const separator = document.getElementById('separator').value || '-';
+      const capitalize = document.getElementById('capitalizeWords').checked;
+      const includeNumber = document.getElementById('includeNumber').checked;
+
+      const words = [];
+      for (let i = 0; i < wordCount; i++) {
+        let word = WORD_LIST[getSecureRandom(WORD_LIST.length)];
+        if (capitalize) {
+          word = word.charAt(0).toUpperCase() + word.slice(1);
+        }
+        words.push(word);
+      }
+
+      let passphrase = words.join(separator);
+
+      if (includeNumber) {
+        const num = getSecureRandom(100);
+        passphrase += separator + num;
+      }
+
+      return passphrase;
+    }
+
+    function generatePronounceable() {
+      const length = parseInt(document.getElementById('pronounceableLengthInput').value) || 16;
+      const includeCapitals = document.getElementById('pronounceableCapitals').checked;
+      const includeNumbers = document.getElementById('pronounceableNumbers').checked;
+
+      let password = '';
+      let isVowel = getSecureRandom(2) === 0;
+
+      while (password.length < length) {
+        const chars = isVowel ? VOWELS : CONSONANTS;
+        let char = chars[getSecureRandom(chars.length)];
+
+        if (includeCapitals && getSecureRandom(4) === 0) {
+          char = char.toUpperCase();
+        }
+
+        password += char;
+        isVowel = !isVowel;
+
+        // Occasionally add double consonant or vowel for natural feel
+        if (password.length < length - 1 && getSecureRandom(6) === 0) {
+          password += chars[getSecureRandom(chars.length)];
+        }
+      }
+
+      password = password.slice(0, length);
+
+      if (includeNumbers) {
+        // Replace a random position with a number
+        const pos = getSecureRandom(password.length);
+        const num = getSecureRandom(10).toString();
+        password = password.slice(0, pos) + num + password.slice(pos + 1);
+      }
+
+      return password;
+    }
+
+    // Strength calculation - adjusted thresholds
+    function calculateStrength(password) {
+      let poolSize = 0;
+
+      if (/[a-z]/.test(password)) poolSize += 26;
+      if (/[A-Z]/.test(password)) poolSize += 26;
+      if (/[0-9]/.test(password)) poolSize += 10;
+      if (/[^a-zA-Z0-9]/.test(password)) poolSize += 32;
+
+      // Use length * log2(poolSize) to avoid overflow with long passwords
+      const entropy = password.length * Math.log2(poolSize);
+
+      let level, color, label;
+
+      // Adjusted thresholds: Very Weak < 50, Weak 50-80, Fair 80-120, Strong 120-200, Very Strong 200-4096, Super Strong >= 4096
+      let labelColor;
+      if (entropy < 50) {
+        level = 15;
+        color = 'var(--very-weak)';
+        labelColor = color;
+        label = 'Very Weak';
+      } else if (entropy < 80) {
+        level = 35;
+        color = 'var(--weak)';
+        labelColor = color;
+        label = 'Weak';
+      } else if (entropy < 120) {
+        level = 55;
+        color = 'var(--fair)';
+        labelColor = color;
+        label = 'Fair';
+      } else if (entropy < 200) {
+        level = 80;
+        color = 'var(--strong)';
+        labelColor = color;
+        label = 'Strong';
+      } else if (entropy < 4096) {
+        level = 100;
+        color = 'var(--very-strong)';
+        labelColor = color;
+        label = 'Very Strong';
+      } else {
+        level = 100;
+        color = 'var(--super-strong)';
+        labelColor = 'var(--very-strong)';
+        label = 'Super Strong';
+      }
+
+      return { entropy, level, color, labelColor, label };
+    }
+
+    function updateStrengthMeter(password) {
+      const strength = calculateStrength(password);
+      const fill = document.getElementById('strengthFill');
+      const label = document.getElementById('strengthLabel');
+      const entropyText = document.getElementById('entropyText');
+
+      fill.style.width = strength.level + '%';
+      fill.style.background = strength.color;
+      fill.classList.toggle('super-strong', strength.label === 'Super Strong');
+      label.textContent = strength.label;
+      label.style.color = strength.labelColor;
+      entropyText.textContent = Math.round(strength.entropy) + ' bits of entropy';
+    }
+
+    // Copy to clipboard
+    async function copyPassword() {
+      const passwordText = document.getElementById('passwordText').value;
+      if (!passwordText || passwordText.startsWith('Select at least')) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(passwordText);
+        const btn = document.getElementById('copyBtn');
+        btn.classList.add('copied');
+        btn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Copied!
+        `;
+
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copy
+          `;
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
+    }
+
+    // Password history (passwords never stored, only tracking preference is saved)
+    function toggleHistoryTracking() {
+      trackingEnabled = document.getElementById('trackHistory').checked;
+      // Clear history when tracking is disabled for privacy
+      if (!trackingEnabled) {
+        passwordHistory.length = 0;
+      }
+      savePreferences();
+      renderHistory();
+    }
+
+    function addToHistory(password) {
+      if (!trackingEnabled) return;
+      if (password.startsWith('Select at least')) return;
+
+      passwordHistory.unshift(password);
+      if (passwordHistory.length > 100) {
+        passwordHistory.pop();
+      }
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const list = document.getElementById('historyList');
+
+      if (!trackingEnabled) {
+        list.innerHTML = '<div class="history-empty">History tracking is disabled</div>';
+        return;
+      }
+
+      if (passwordHistory.length === 0) {
+        list.innerHTML = '<div class="history-empty">No passwords generated yet</div>';
+        return;
+      }
+
+      list.innerHTML = passwordHistory.map((pwd, i) => `
+        <div class="history-item">
+          <span class="history-password">${escapeHtml(pwd)}</span>
+          <button class="history-copy-btn" onclick="copyHistoryItem(${i})" title="Copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    async function copyHistoryItem(index) {
+      try {
+        await navigator.clipboard.writeText(passwordHistory[index]);
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
+    }
+
+    function clearHistory() {
+      passwordHistory = [];
+      renderHistory();
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Preferences (tracking setting saved, but NOT the passwords themselves)
+    function savePreferences() {
+      const prefs = {
+        length: document.getElementById('lengthInput').value,
+        uppercase: document.getElementById('uppercase').checked,
+        lowercase: document.getElementById('lowercase').checked,
+        numbers: document.getElementById('numbers').checked,
+        symbols: document.getElementById('symbols').checked,
+        uppercaseMin: document.getElementById('uppercaseMin').value,
+        uppercaseMax: document.getElementById('uppercaseMax').value,
+        lowercaseMin: document.getElementById('lowercaseMin').value,
+        lowercaseMax: document.getElementById('lowercaseMax').value,
+        numbersMin: document.getElementById('numbersMin').value,
+        numbersMax: document.getElementById('numbersMax').value,
+        symbolsMin: document.getElementById('symbolsMin').value,
+        symbolsMax: document.getElementById('symbolsMax').value,
+        excludeAmbiguous: document.getElementById('excludeAmbiguous').checked,
+        customSymbols: document.getElementById('customSymbols').value,
+        excludeChars: document.getElementById('excludeChars').value,
+        passwordCount: document.getElementById('passwordCount').value,
+        wordCount: document.getElementById('wordCountInput').value,
+        separator: document.getElementById('separator').value,
+        capitalizeWords: document.getElementById('capitalizeWords').checked,
+        includeNumber: document.getElementById('includeNumber').checked,
+        pronounceableLength: document.getElementById('pronounceableLengthInput').value,
+        pronounceableCapitals: document.getElementById('pronounceableCapitals').checked,
+        pronounceableNumbers: document.getElementById('pronounceableNumbers').checked,
+        trackHistory: document.getElementById('trackHistory').checked,
+        advancedOpen: document.getElementById('advancedContent').classList.contains('open')
+      };
+      localStorage.setItem('password-generator-prefs', JSON.stringify(prefs));
+    }
+
+    function loadPreferences() {
+      try {
+        const prefs = JSON.parse(localStorage.getItem('password-generator-prefs'));
+        if (!prefs) return;
+
+        // Load advancedOpen FIRST, before other prefs trigger savePreferences via onchange
+        if (prefs.advancedOpen) {
+          document.querySelector('.collapsible-header').classList.add('open');
+          document.getElementById('advancedContent').classList.add('open');
+        }
+
+        if (prefs.length) updateLength(prefs.length);
+        if (prefs.uppercase !== undefined) document.getElementById('uppercase').checked = prefs.uppercase;
+        if (prefs.lowercase !== undefined) document.getElementById('lowercase').checked = prefs.lowercase;
+        if (prefs.numbers !== undefined) document.getElementById('numbers').checked = prefs.numbers;
+        if (prefs.symbols !== undefined) document.getElementById('symbols').checked = prefs.symbols;
+        if (prefs.uppercaseMin !== undefined) document.getElementById('uppercaseMin').value = prefs.uppercaseMin;
+        if (prefs.uppercaseMax !== undefined) document.getElementById('uppercaseMax').value = prefs.uppercaseMax;
+        if (prefs.lowercaseMin !== undefined) document.getElementById('lowercaseMin').value = prefs.lowercaseMin;
+        if (prefs.lowercaseMax !== undefined) document.getElementById('lowercaseMax').value = prefs.lowercaseMax;
+        if (prefs.numbersMin !== undefined) document.getElementById('numbersMin').value = prefs.numbersMin;
+        if (prefs.numbersMax !== undefined) document.getElementById('numbersMax').value = prefs.numbersMax;
+        if (prefs.symbolsMin !== undefined) document.getElementById('symbolsMin').value = prefs.symbolsMin;
+        if (prefs.symbolsMax !== undefined) document.getElementById('symbolsMax').value = prefs.symbolsMax;
+        if (prefs.excludeAmbiguous !== undefined) document.getElementById('excludeAmbiguous').checked = prefs.excludeAmbiguous;
+        if (prefs.customSymbols) {
+          document.getElementById('customSymbols').value = prefs.customSymbols;
+          updateClearButtonVisibility('customSymbols', 'customSymbolsClearBtn');
+        }
+        if (prefs.excludeChars) {
+          document.getElementById('excludeChars').value = prefs.excludeChars;
+          updateClearButtonVisibility('excludeChars', 'excludeCharsClearBtn');
+        }
+        if (prefs.passwordCount) document.getElementById('passwordCount').value = prefs.passwordCount;
+        if (prefs.wordCount) updateWordCount(prefs.wordCount);
+        if (prefs.separator) document.getElementById('separator').value = prefs.separator;
+        if (prefs.capitalizeWords !== undefined) document.getElementById('capitalizeWords').checked = prefs.capitalizeWords;
+        if (prefs.includeNumber !== undefined) document.getElementById('includeNumber').checked = prefs.includeNumber;
+        if (prefs.pronounceableLength) updatePronounceableLength(prefs.pronounceableLength);
+        if (prefs.pronounceableCapitals !== undefined) document.getElementById('pronounceableCapitals').checked = prefs.pronounceableCapitals;
+        if (prefs.pronounceableNumbers !== undefined) document.getElementById('pronounceableNumbers').checked = prefs.pronounceableNumbers;
+        if (prefs.trackHistory !== undefined) {
+          document.getElementById('trackHistory').checked = prefs.trackHistory;
+          trackingEnabled = prefs.trackHistory;
+        }
+      } catch (e) {
+        console.error('Failed to load preferences:', e);
+      }
+    }
+  </script>
+</body>
+</html>

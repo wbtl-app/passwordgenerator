@@ -1,5 +1,12 @@
-# passwordgenerator
+# Password Generator
 
-A wbtl.app tool.
+A secure password generator with customizable rules.
 
-Visit: https://passwordgenerator.wbtl.app
+## Development
+
+This tool has no build dependencies. The source file can be edited directly.
+
+## Output
+
+Production files are in the `dist/` folder:
+- `dist/index.html` - Main application
