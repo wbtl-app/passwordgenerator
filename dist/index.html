@@ -1386,19 +1386,147 @@
       pronounceableNumbers: false
     };
 
-    // Initialize
+    // URL parameters: readable query string, e.g. ?mode=password&length=64
+    // Parameter names are interpreted per mode (e.g. "length" is the password
+    // length in password mode and the pronounceable length in pronounceable mode).
+    const MODES = ['password', 'passphrase', 'pronounceable'];
+    // Number of passwords to generate applies to every mode
+    const COUNT_FIELD = { key: 'count', id: 'passwordCount', type: 'int', set: v => { document.getElementById('passwordCount').value = Math.max(1, Math.min(100, v)); } };
+    const URL_SCHEMA = {
+      password: [
+        { key: 'length', id: 'lengthInput', type: 'int', set: v => updateLength(v) },
+        { key: 'upper', id: 'uppercase', type: 'bool' },
+        { key: 'lower', id: 'lowercase', type: 'bool' },
+        { key: 'numbers', id: 'numbers', type: 'bool' },
+        { key: 'symbols', id: 'symbols', type: 'bool' },
+        { key: 'upperMin', id: 'uppercaseMin', type: 'min' },
+        { key: 'upperMax', id: 'uppercaseMax', type: 'max' },
+        { key: 'lowerMin', id: 'lowercaseMin', type: 'min' },
+        { key: 'lowerMax', id: 'lowercaseMax', type: 'max' },
+        { key: 'numbersMin', id: 'numbersMin', type: 'min' },
+        { key: 'numbersMax', id: 'numbersMax', type: 'max' },
+        { key: 'symbolsMin', id: 'symbolsMin', type: 'min' },
+        { key: 'symbolsMax', id: 'symbolsMax', type: 'max' },
+        { key: 'excludeAmbiguous', id: 'excludeAmbiguous', type: 'bool' },
+        { key: 'symbolSet', id: 'customSymbols', type: 'text', clearBtn: 'customSymbolsClearBtn' },
+        { key: 'exclude', id: 'excludeChars', type: 'text', clearBtn: 'excludeCharsClearBtn' },
+        COUNT_FIELD
+      ],
+      passphrase: [
+        { key: 'words', id: 'wordCountInput', type: 'int', set: v => updateWordCount(v) },
+        { key: 'separator', id: 'separator', type: 'text', maxLength: 3 },
+        { key: 'capitalize', id: 'capitalizeWords', type: 'bool' },
+        { key: 'number', id: 'includeNumber', type: 'bool' },
+        COUNT_FIELD
+      ],
+      pronounceable: [
+        { key: 'length', id: 'pronounceableLengthInput', type: 'int', set: v => updatePronounceableLength(v) },
+        { key: 'upper', id: 'pronounceableCapitals', type: 'bool' },
+        { key: 'numbers', id: 'pronounceableNumbers', type: 'bool' },
+        COUNT_FIELD
+      ]
+    };
+
+    // While true, settings changes are not persisted or written to the URL (used during startup)
+    let initializing = true;
+    let urlUpdateTimer = null;
+
+    function parseBool(value) {
+      const v = value.trim().toLowerCase();
+      if (['true', '1', 'yes', 'on'].includes(v)) return true;
+      if (['false', '0', 'no', 'off'].includes(v)) return false;
+      return null;
+    }
+
+    function parseNonNegativeInt(value) {
+      const v = value.trim();
+      return /^\d+$/.test(v) ? parseInt(v, 10) : null;
+    }
+
+    // Case-insensitive lookup of query parameters
+    function getUrlParams() {
+      const params = {};
+      new URLSearchParams(window.location.search).forEach((value, key) => {
+        params[key.toLowerCase()] = value;
+      });
+      return params;
+    }
+
+    function getModeFromUrl() {
+      const mode = (getUrlParams().mode || '').trim().toLowerCase();
+      if (MODES.includes(mode)) return mode;
+      return getModeFromHash();
+    }
+
+    function applyUrlParams(mode) {
+      const params = getUrlParams();
+      URL_SCHEMA[mode].forEach(field => {
+        const raw = params[field.key.toLowerCase()];
+        if (raw === undefined) return;
+        const el = document.getElementById(field.id);
+        if (field.type === 'bool') {
+          const b = parseBool(raw);
+          if (b !== null) el.checked = b;
+        } else if (field.type === 'int') {
+          const n = parseNonNegativeInt(raw);
+          if (n !== null) field.set(n);
+        } else if (field.type === 'min') {
+          const n = parseNonNegativeInt(raw);
+          if (n !== null) el.value = n;
+        } else if (field.type === 'max') {
+          const v = raw.trim().toLowerCase();
+          if (v === '' || v === 'none') el.value = '';
+          else {
+            const n = parseNonNegativeInt(v);
+            if (n !== null) el.value = n;
+          }
+        } else if (field.type === 'text') {
+          el.value = field.maxLength ? raw.slice(0, field.maxLength) : raw;
+          if (field.clearBtn) updateClearButtonVisibility(field.id, field.clearBtn);
+        }
+      });
+    }
+
+    // Encode only what must be encoded, so URLs stay human readable
+    function encodeParam(value) {
+      return encodeURIComponent(value).replace(/%2C/gi, ',').replace(/%3A/gi, ':').replace(/%40/gi, '@');
+    }
+
+    function buildQueryString() {
+      const parts = ['mode=' + currentMode];
+      URL_SCHEMA[currentMode].forEach(field => {
+        const el = document.getElementById(field.id);
+        const value = field.type === 'bool' ? String(el.checked) : el.value;
+        parts.push(field.key + '=' + encodeParam(value));
+      });
+      return '?' + parts.join('&');
+    }
+
+    function updateUrl() {
+      if (initializing) return;
+      // Debounced: sliders fire many events and browsers throttle replaceState
+      clearTimeout(urlUpdateTimer);
+      urlUpdateTimer = setTimeout(() => {
+        try {
+          history.replaceState(null, '', window.location.pathname + buildQueryString());
+        } catch (e) {
+          console.error('Failed to update URL:', e);
+        }
+      }, 150);
+    }
+
+    // Initialize: defaults (HTML) < localStorage < URL parameters
     document.addEventListener('DOMContentLoaded', () => {
       loadPreferences();
+      const initialMode = getModeFromUrl();
+      setMode(initialMode, false);
+      applyUrlParams(initialMode);
+      initializing = false;
       renderHistory();
-      // Set mode from URL hash
-      const initialMode = getModeFromHash();
-      if (initialMode !== 'password') {
-        setMode(initialMode, false);
+      // Convert legacy #passphrase / #pronounceable links to query parameters
+      if (window.location.hash && !getUrlParams().mode) {
+        updateUrl();
       }
-      // Handle browser back/forward
-      window.addEventListener('hashchange', () => {
-        setMode(getModeFromHash(), false);
-      });
       document.querySelector('.toggle-switch').addEventListener('keydown', function(e) {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -1450,7 +1578,7 @@
     })();
 
     // Mode switching
-    function setMode(mode, updateHash = true) {
+    function setMode(mode, shouldUpdateUrl = true) {
       currentMode = mode;
 
       document.querySelectorAll('.mode-tab').forEach(tab => tab.classList.remove('active'));
@@ -1470,17 +1598,12 @@
         btn.textContent = 'Generate Password';
       }
 
-      // Update URL hash (password is default, no hash needed)
-      if (updateHash) {
-        if (mode === 'password') {
-          history.replaceState(null, '', window.location.pathname);
-        } else {
-          history.replaceState(null, '', '#' + mode);
-        }
+      if (shouldUpdateUrl) {
+        updateUrl();
       }
     }
 
-    // Read mode from URL hash
+    // Legacy: read mode from URL hash (#passphrase, #pronounceable)
     function getModeFromHash() {
       const hash = window.location.hash.slice(1).toLowerCase();
       if (hash === 'passphrase') return 'passphrase';
@@ -1516,7 +1639,7 @@
       const content = document.getElementById('advancedContent');
       header.classList.toggle('open');
       content.classList.toggle('open');
-      savePreferences();
+      savePreferences(false);
     }
 
     // Clear button visibility
@@ -1889,7 +2012,7 @@
       if (!trackingEnabled) {
         passwordHistory.length = 0;
       }
-      savePreferences();
+      savePreferences(false);
       renderHistory();
     }
 
@@ -1950,7 +2073,10 @@
     }
 
     // Preferences (tracking setting saved, but NOT the passwords themselves)
-    function savePreferences() {
+    // shouldUpdateUrl is false for UI-only preferences (advanced panel, history tracking)
+    function savePreferences(shouldUpdateUrl = true) {
+      // Don't persist during startup, so values from a shared URL don't overwrite local preferences
+      if (initializing) return;
       const prefs = {
         length: document.getElementById('lengthInput').value,
         uppercase: document.getElementById('uppercase').checked,
@@ -1980,6 +2106,7 @@
         advancedOpen: document.getElementById('advancedContent').classList.contains('open')
       };
       localStorage.setItem('password-generator-prefs', JSON.stringify(prefs));
+      if (shouldUpdateUrl) updateUrl();
     }
 
     function loadPreferences() {
