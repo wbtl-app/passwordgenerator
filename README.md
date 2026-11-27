@@ -21,8 +21,9 @@ Order of precedence: **defaults < saved local settings < URL**. Only the paramet
 URL are overridden; everything else comes from local settings (or defaults). Opening a URL does not
 change saved settings; changing a setting afterwards saves it as usual.
 
-When any setting is changed, the URL is updated to contain the full set of parameters for the
-current mode, so it can be copied and shared to reproduce exactly that setup.
+When any setting is changed, the URL is updated to contain the parameters of the current mode
+that differ from the defaults (with all defaults, the URL has no parameters). Note that settings
+left out of a shared URL fall back to the recipient's saved local settings.
 
 Parameter names are case-insensitive. Booleans accept `true`/`false` (also `1`/`0`, `yes`/`no`, `on`/`off`).
 

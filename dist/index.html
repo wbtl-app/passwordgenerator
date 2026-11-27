@@ -1492,14 +1492,17 @@
       return encodeURIComponent(value).replace(/%2C/gi, ',').replace(/%3A/gi, ':').replace(/%40/gi, '@');
     }
 
+    // Only settings that differ from the defaults are written to the URL
     function buildQueryString() {
-      const parts = ['mode=' + currentMode];
+      const parts = [];
+      if (currentMode !== 'password') parts.push('mode=' + currentMode);
       URL_SCHEMA[currentMode].forEach(field => {
         const el = document.getElementById(field.id);
         const value = field.type === 'bool' ? String(el.checked) : el.value;
-        parts.push(field.key + '=' + encodeParam(value));
+        const defaultValue = String(DEFAULTS[field.id.replace(/Input$/, '')]);
+        if (value !== defaultValue) parts.push(field.key + '=' + encodeParam(value));
       });
-      return '?' + parts.join('&');
+      return parts.length ? '?' + parts.join('&') : '';
     }
 
     function updateUrl() {
